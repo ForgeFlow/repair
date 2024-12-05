@@ -22,6 +22,7 @@ Available addons
 addon | version | maintainers | summary
 --- | --- | --- | ---
 [base_repair_config](base_repair_config/) | 17.0.1.0.0 | [![marcelsavegnago](https://github.com/marcelsavegnago.png?size=30px)](https://github.com/marcelsavegnago) | Provides general settings for the Repair App
+[repair_order_template](repair_order_template/) | 17.0.1.0.0 | [![ivantodorovich](https://github.com/ivantodorovich.png?size=30px)](https://github.com/ivantodorovich) | Use templates to save time when creating repair orders
 [repair_picking_after_done](repair_picking_after_done/) | 17.0.1.0.0 |  | Transfer repaired move to another location directly from repair order
 [repair_quality_control](repair_quality_control/) | 17.0.1.0.0 | [![peluko00](https://github.com/peluko00.png?size=30px)](https://github.com/peluko00) | Create quality controls from repair order
 [repair_service](repair_service/) | 17.0.1.0.0 |  | Adds services to repair orders, so that they can be added as sale order lines.
