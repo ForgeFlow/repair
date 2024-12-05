@@ -1,6 +1,6 @@
 [project]
 name = "odoo-addons-oca-repair"
-version = "17.0.20241126.0"
+version = "17.0.20241205.0"
 dependencies = [
     "odoo-addon-repair_picking_after_done>=17.0dev,<17.1dev",
     "odoo-addon-repair_quality_control>=17.0dev,<17.1dev",
@@ -8,6 +8,7 @@ dependencies = [
     "odoo-addon-repair_stock>=17.0dev,<17.1dev",
     "odoo-addon-repair_timesheet>=17.0dev,<17.1dev",
     "odoo-addon-repair_type>=17.0dev,<17.1dev",
+    "odoo-addon-repair_type_product_destination>=17.0dev,<17.1dev",
 ]
 classifiers=[
     "Programming Language :: Python",
