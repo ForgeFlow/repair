@@ -36,7 +36,7 @@ class RepairOrder(models.Model):
 
     def _action_launch_stock_rule(self, repair_lines):
         for line in repair_lines:
-            self._run_procurement_repair(line)
+            self.with_context(should_be_assigned=True)._run_procurement_repair(line)
         return True
 
     def _run_procurement_repair(self, line):
@@ -54,7 +54,7 @@ class RepairOrder(models.Model):
 
     @api.model
     def _get_procurement_data_repair(self, line):
-        warehouse = self.location_id.get_warehouse()
+        warehouse = self.location_id.warehouse_id
         if not self.procurement_group_id:
             group_id = self.env["procurement.group"].create({"name": self.name})
             self.procurement_group_id = group_id
@@ -69,10 +69,11 @@ class RepairOrder(models.Model):
             "company_id": self.company_id,
             "warehouse_id": warehouse,
             "repair_line_id": line.id,
+            "repair_id": line.repair_id.id,
         }
         if line.lot_id:
-            procurement_data["lot_id"] = line.lot_id.id
-        if line.type == "remove":
+            procurement_data["restrict_lot_id"] = line.lot_id.id
+        if line.repair_line_type == "remove":
             procurement_data[
                 "source_repair_location_id"
             ] = line.repair_id.location_id.id
@@ -81,10 +82,10 @@ class RepairOrder(models.Model):
     @api.model
     def _prepare_procurement_repair(self, line):
         values = self._get_procurement_data_repair(line)
-        warehouse = self.location_id.get_warehouse()
+        warehouse = self.location_id.warehouse_id
         location = (
             self.location_id
-            if line.type == "add"
+            if line.repair_line_type == "add"
             else warehouse.remove_c_type_id.default_location_dest_id
         )
         procurement = self.env["procurement.group"].Procurement(
@@ -104,12 +105,8 @@ class RepairOrder(models.Model):
             for picking in repair.picking_ids:
                 if picking.location_dest_id.id == self.location_id.id:
                     for move_line in picking.move_ids_without_package:
-                        stock_moves = repair.stock_move_ids.filtered(
-                            lambda m: m.product_id.id
-                            == repair.operations.filtered(
-                                lambda l: l.type == "add"
-                                and l.product_id.id == m.product_id.id
-                            ).product_id.id
+                        stock_moves = repair.move_ids.filtered(
+                            lambda m: m.repair_line_type == "add"
                             and m.location_id.id == self.location_id.id
                         )
                         if stock_moves:
@@ -121,12 +118,8 @@ class RepairOrder(models.Model):
                             )
                 if picking.location_id.id == self.location_id.id:
                     for move_line in picking.move_ids_without_package:
-                        stock_moves = repair.stock_move_ids.filtered(
-                            lambda m: m.product_id.id
-                            == repair.operations.filtered(
-                                lambda l: l.type == "remove"
-                                and l.product_id.id == m.product_id.id
-                            ).product_id.id
+                        stock_moves = repair.move_ids.filtered(
+                            lambda m: m.repair_line_type == "remove"
                             and m.location_dest_id.id == self.location_id.id
                         )
                         if stock_moves:
@@ -142,64 +135,33 @@ class RepairOrder(models.Model):
                 # and then recompute the state of the picking.
                 picking._compute_state()
 
-    def action_repair_confirm(self):
-        res = super().action_repair_confirm()
+    def _action_repair_confirm(self):
+        res = super()._action_repair_confirm()
         for repair in self:
-            warehouse = repair.location_id.get_warehouse()
+            warehouse = repair.location_id.warehouse_id
             if warehouse.repair_steps in ["2_steps", "3_steps"]:
                 repair._action_launch_stock_rule(
-                    repair.operations.filtered(lambda l: l.type == "add"),
+                    repair.move_ids.filtered(
+                        lambda move: move.repair_line_type == "add"
+                    ),
                 )
             if warehouse.repair_steps == "3_steps":
                 repair._action_launch_stock_rule(
-                    repair.operations.filtered(lambda l: l.type == "remove"),
+                    repair.move_ids.filtered(
+                        lambda move: move.repair_line_type == "remove"
+                    ),
                 )
             repair._update_stock_moves_and_picking_state()
         return res
 
     @api.onchange("location_id")
     def _onchange_location_id(self):
-        warehouse = self.location_id.get_warehouse()
-        for line in self.operations:
-            if line.type == "add":
+        warehouse = self.location_id.warehouse_id
+        for line in self.move_ids:
+            if line.repair_line_type == "add":
                 line.location_id = self.location_id
-            elif line.type == "remove" and warehouse.repair_steps == "3_steps":
+            elif (
+                line.repair_line_type == "remove"
+                and warehouse.repair_steps == "3_steps"
+            ):
                 line.location_dest_id = self.location_id
-
-
-class RepairLine(models.Model):
-    _inherit = "repair.line"
-
-    @api.onchange("type", "product_id")
-    def onchange_operation_type(self):
-        super().onchange_operation_type()
-        production_location = self.env["stock.location"].search(
-            [("usage", "=", "production")], limit=1
-        )
-        warehouse = self.repair_id.location_id.get_warehouse()
-        if self.type == "add":
-            self.write(
-                {
-                    "location_id": self.repair_id.location_id.id,
-                    "location_dest_id": production_location.id,
-                }
-            )
-        elif self.type == "remove":
-            self.write({"location_id": production_location.id})
-            if warehouse.repair_steps in ["1_step", "2_steps"]:
-                scrap_location = self.env["stock.location"].search(
-                    [
-                        ("scrap_location", "=", True),
-                        ("company_id", "=", warehouse.company_id.id),
-                    ],
-                    limit=1,
-                )
-                self.write({"location_dest_id": scrap_location.id})
-            else:
-                self.write({"location_dest_id": self.repair_id.location_id.id})
-
-    def create(self, vals):
-        line = super().create(vals)
-        if line.repair_id.state in ["confirmed", "under_repair", "ready"]:
-            line.repair_id._action_launch_stock_rule(line)
-        return line

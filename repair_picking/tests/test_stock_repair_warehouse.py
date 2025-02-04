@@ -4,10 +4,10 @@
 from odoo.tests import common
 
 
-class TestStockRepairWarehouse(common.SavepointCase):
+class TestStockRepairWarehouse(common.TransactionCase):
     @classmethod
     def setUpClass(cls):
-        super(TestStockRepairWarehouse, cls).setUpClass()
+        super().setUpClass()
 
         cls.warehouse_obj = cls.env["stock.warehouse"]
         cls.product_obj = cls.env["product.product"]

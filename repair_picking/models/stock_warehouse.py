@@ -13,7 +13,6 @@ class StockWarehouse(models.Model):
             ("2_steps", "Pick component, repair"),
             ("3_steps", "Pick component, repair, store removed component"),
         ],
-        string="Repair Steps",
         default="1_step",
     )
     add_c_type_id = fields.Many2one(
@@ -22,7 +21,7 @@ class StockWarehouse(models.Model):
     remove_c_type_id = fields.Many2one(
         "stock.picking.type", string="Remove component from Repair"
     )
-    repair_route_id = fields.Many2one("stock.location.route", string="Repair Route")
+    repair_route_id = fields.Many2one("stock.route", string="Repair Route")
     repair_location_id = fields.Many2one("stock.location", string="Repair Location")
 
     def update_picking_types(self, repair_steps, repair_location_id):
@@ -60,7 +59,7 @@ class StockWarehouse(models.Model):
         if repair_location_id:
             self.repair_route_id.rule_ids.filtered(
                 lambda r: r.picking_type_id == self.add_c_type_id
-            ).write({"location_id": repair_location_id})
+            ).write({"location_dest_id": repair_location_id})
             self.repair_route_id.rule_ids.filtered(
                 lambda r: r.picking_type_id == self.remove_c_type_id
             ).write({"location_src_id": repair_location_id})
@@ -70,7 +69,7 @@ class StockWarehouse(models.Model):
             ).active = False
 
     def write(self, vals):
-        res = super(StockWarehouse, self).write(vals)
+        res = super().write(vals)
         for warehouse in self:
             repair_steps = vals.get("repair_steps")
             repair_location_id = vals.get("repair_location_id")
@@ -128,7 +127,7 @@ class StockWarehouse(models.Model):
     def _create_repair_route(self):
         for warehouse in self:
             if not warehouse.repair_route_id:
-                route = self.env["stock.location.route"].create(
+                route = self.env["stock.route"].create(
                     {
                         "name": "Repair Route for %s" % warehouse.name,
                         "warehouse_selectable": True,
@@ -144,7 +143,7 @@ class StockWarehouse(models.Model):
                         "picking_type_id": warehouse.add_c_type_id.id,
                         "route_id": route.id,
                         "location_src_id": warehouse.lot_stock_id.id,
-                        "location_id": warehouse.repair_location_id.id
+                        "location_dest_id": warehouse.repair_location_id.id
                         or warehouse.view_location_id.id,
                         "action": "pull",
                         "company_id": warehouse.company_id.id,
@@ -173,7 +172,7 @@ class StockWarehouse(models.Model):
                         "route_id": warehouse.repair_route_id.id,
                         "location_src_id": warehouse.repair_location_id.id
                         or warehouse.view_location_id.id,
-                        "location_id": warehouse.view_location_id.id,
+                        "location_dest_id": warehouse.view_location_id.id,
                         "action": "pull",
                         "company_id": warehouse.company_id.id,
                         "warehouse_id": warehouse.id,

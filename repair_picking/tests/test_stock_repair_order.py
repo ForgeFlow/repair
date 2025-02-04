@@ -4,13 +4,13 @@
 from odoo.tests import common
 
 
-class TestStockRepairOrder(common.SavepointCase):
+class TestStockRepairOrder(common.TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
 
         cls.repair_model = cls.env["repair.order"]
-        cls.repair_line_model = cls.env["repair.line"]
+        cls.repair_line_model = cls.env["stock.move"]
         cls.product_model = cls.env["product.product"]
         cls.stock_location_model = cls.env["stock.location"]
         cls.warehouse_model = cls.env["stock.warehouse"]
@@ -87,7 +87,7 @@ class TestStockRepairOrder(common.SavepointCase):
                 "name": "Repair Line 1",
                 "repair_id": repair_order.id,
                 "product_id": self.product2.id,
-                "type": "add",
+                "repair_line_type": "add",
                 "product_uom_qty": 1,
                 "product_uom": self.product2.uom_id.id,
                 "price_unit": 1,
@@ -95,10 +95,8 @@ class TestStockRepairOrder(common.SavepointCase):
                 "location_dest_id": self.production_location.id,
             }
         )
-        repair_order.action_repair_confirm()
+        repair_order._action_repair_confirm()
         self.assertEqual(repair_order.state, "confirmed")
-        repair_order.action_repair_ready()
-        self.assertEqual(repair_order.state, "ready")
 
     def test_2steps_repair_order_flow(self):
         self.warehouse.write(
@@ -123,7 +121,7 @@ class TestStockRepairOrder(common.SavepointCase):
                 "name": "Repair Line 2",
                 "repair_id": repair_order.id,
                 "product_id": self.product2.id,
-                "type": "add",
+                "repair_line_type": "add",
                 "product_uom_qty": 1,
                 "product_uom": self.product2.uom_id.id,
                 "price_unit": 1,
@@ -131,7 +129,7 @@ class TestStockRepairOrder(common.SavepointCase):
                 "location_dest_id": self.production_location.id,
             }
         )
-        repair_order.action_repair_confirm()
+        repair_order._action_repair_confirm()
         repair_order._compute_picking_ids()
         self.assertEqual(repair_order.state, "confirmed")
         self.assertTrue(repair_order.picking_ids)
@@ -160,7 +158,7 @@ class TestStockRepairOrder(common.SavepointCase):
                 "name": "Repair Line 3",
                 "repair_id": repair_order.id,
                 "product_id": self.product2.id,
-                "type": "add",
+                "repair_line_type": "add",
                 "product_uom_qty": 1,
                 "product_uom": self.product2.uom_id.id,
                 "price_unit": 1,
@@ -173,7 +171,7 @@ class TestStockRepairOrder(common.SavepointCase):
                 "name": "Repair Line 4",
                 "repair_id": repair_order.id,
                 "product_id": self.product2.id,
-                "type": "remove",
+                "repair_line_type": "remove",
                 "product_uom_qty": 1,
                 "product_uom": self.product2.uom_id.id,
                 "price_unit": 1,
@@ -181,7 +179,7 @@ class TestStockRepairOrder(common.SavepointCase):
                 "location_dest_id": self.repair_location.id,
             }
         )
-        repair_order.action_repair_confirm()
+        repair_order._action_repair_confirm()
         repair_order._compute_picking_ids()
         self.assertEqual(repair_order.state, "confirmed")
         self.assertTrue(repair_order.picking_ids)
@@ -214,7 +212,7 @@ class TestStockRepairOrder(common.SavepointCase):
                 "name": "Repair Line 3",
                 "repair_id": repair_order.id,
                 "product_id": self.product2.id,
-                "type": "add",
+                "repair_line_type": "add",
                 "product_uom_qty": 1,
                 "product_uom": self.product2.uom_id.id,
                 "price_unit": 1,
@@ -222,7 +220,7 @@ class TestStockRepairOrder(common.SavepointCase):
                 "location_dest_id": self.production_location.id,
             }
         )
-        repair_order.action_repair_confirm()
+        repair_order._action_repair_confirm()
         repair_order._compute_picking_ids()
         self.assertEqual(repair_order.state, "confirmed")
         self.assertTrue(repair_order.picking_ids)
@@ -236,7 +234,7 @@ class TestStockRepairOrder(common.SavepointCase):
                 "name": "Repair Line Add",
                 "repair_id": repair_order.id,
                 "product_id": self.product2.id,
-                "type": "add",
+                "repair_line_type": "add",
                 "product_uom_qty": 1,
                 "product_uom": self.product2.uom_id.id,
                 "price_unit": 1,
@@ -254,7 +252,7 @@ class TestStockRepairOrder(common.SavepointCase):
                 "name": "Repair Line Remove",
                 "repair_id": repair_order.id,
                 "product_id": self.product2.id,
-                "type": "remove",
+                "repair_line_type": "remove",
                 "product_uom_qty": 1,
                 "product_uom": self.product2.uom_id.id,
                 "price_unit": 1,
