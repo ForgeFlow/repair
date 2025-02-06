@@ -9,7 +9,7 @@
     "website": "https://github.com/OCA/repair",
     "summary": "Enhanced repair order management with pickings "
     "for adding and removing components",
-    "depends": ["stock_restrict_lot", "repair_stock"],
+    "depends": ["repair_restrict_lot", "repair_stock"],
     "data": [
         "views/stock_warehouse_views.xml",
     ],

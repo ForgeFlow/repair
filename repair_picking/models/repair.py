@@ -71,8 +71,8 @@ class RepairOrder(models.Model):
             "repair_line_id": line.id,
             "repair_id": line.repair_id.id,
         }
-        if line.lot_id:
-            procurement_data["restrict_lot_id"] = line.lot_id.id
+        if line.restrict_lot_id:
+            procurement_data["restrict_lot_id"] = line.restrict_lot_id.id
         if line.repair_line_type == "remove":
             procurement_data[
                 "source_repair_location_id"
