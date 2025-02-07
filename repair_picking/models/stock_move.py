@@ -8,7 +8,9 @@ class StockMove(models.Model):
     _inherit = "stock.move"
 
     def _should_be_assigned(self):
-        if self.repair_id and self._context.get("should_be_assigned", False):
+        if (self.related_repair_id or self.repair_id) and self._context.get(
+            "should_be_assigned", False
+        ):
             return True
         return super()._should_be_assigned()
 
@@ -17,6 +19,7 @@ class StockMove(models.Model):
         moves = super().create(vals_list)
         if not self._context.get("should_be_assigned", False):
             for move in moves:
-                if move.repair_id.state in ["confirmed", "under_repair"]:
-                    move.repair_id._action_launch_stock_rule(move)
+                repair = move.related_repair_id or move.repair_id
+                if repair.state in ["confirmed", "under_repair"]:
+                    repair._action_launch_stock_rule(move)
         return moves

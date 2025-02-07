@@ -8,7 +8,7 @@ The main features are:
 
 - Customize repair steps: Choose between a 1-step, 2-step, or 3-step
   repair process.
-- Add and remove components during the repair process using separate
+- Add and recycle components during the repair process using separate
   picking types.
 - Associate repair orders with pickings for improved traceability.
 - Automatic creation of pickings and procurement routes based on the

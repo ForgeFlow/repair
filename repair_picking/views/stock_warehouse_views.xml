@@ -28,12 +28,12 @@
                 <field
                     name="add_c_type_id"
                     invisible="repair_steps not in ['2_steps', '3_steps']"
-                    groups="stock.group_stock_multi_warehouses"
+                    readonly="1"
                 />
                 <field
-                    name="remove_c_type_id"
+                    name="recycle_c_type_id"
                     invisible="repair_steps != '3_steps'"
-                    groups="stock.group_stock_multi_warehouses"
+                    readonly="1"
                 />
             </xpath>
         </field>

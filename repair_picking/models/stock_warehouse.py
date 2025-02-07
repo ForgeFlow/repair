@@ -16,10 +16,16 @@ class StockWarehouse(models.Model):
         default="1_step",
     )
     add_c_type_id = fields.Many2one(
-        "stock.picking.type", string="Add Component to Repair"
+        comodel_name="stock.picking.type",
+        string="Add Component to Repair",
+        help="This operation will be used to move components to repair location "
+        "when needed by repair lines of type 'Add'.",
     )
-    remove_c_type_id = fields.Many2one(
-        "stock.picking.type", string="Remove component from Repair"
+    recycle_c_type_id = fields.Many2one(
+        comodel_name="stock.picking.type",
+        string="Recycle component from Repair",
+        help="This operation will be used to move components out of the repair "
+        "location when needed by repair lines of type 'Recycle'.",
     )
     repair_route_id = fields.Many2one("stock.route", string="Repair Route")
     repair_location_id = fields.Many2one("stock.location", string="Repair Location")
@@ -30,12 +36,25 @@ class StockWarehouse(models.Model):
         if repair_steps == "1_step":
             self.add_c_type_id.active = False
         if repair_steps == "3_steps":
-            self.remove_c_type_id.active = True
+            self.recycle_c_type_id.active = True
         if repair_steps in ["1_step", "2_steps"]:
-            self.remove_c_type_id.active = False
+            self.recycle_c_type_id.active = False
         if repair_location_id:
             self.add_c_type_id.write({"default_location_dest_id": repair_location_id})
-            self.remove_c_type_id.write({"default_location_src_id": repair_location_id})
+            self.recycle_c_type_id.write(
+                {"default_location_src_id": repair_location_id}
+            )
+            rep_type_vals = {
+                "default_recycle_location_dest_id": repair_location_id,
+            }
+            if "default_add_location_src_id" in self.repair_type_id._fields:
+                # Integrate with module `repair_type`.
+                rep_type_vals.update(
+                    {
+                        "default_add_location_src_id": repair_location_id,
+                    }
+                )
+            self.repair_type_id.write(rep_type_vals)
 
     def update_repair_routes(self, repair_steps, repair_location_id):
         if repair_steps == "2_steps" or repair_steps == "3_steps":
@@ -61,11 +80,11 @@ class StockWarehouse(models.Model):
                 lambda r: r.picking_type_id == self.add_c_type_id
             ).write({"location_dest_id": repair_location_id})
             self.repair_route_id.rule_ids.filtered(
-                lambda r: r.picking_type_id == self.remove_c_type_id
+                lambda r: r.picking_type_id == self.recycle_c_type_id
             ).write({"location_src_id": repair_location_id})
         if repair_steps in ["1_step", "2_steps"]:
             self.repair_route_id.rule_ids.filtered(
-                lambda r: r.picking_type_id == self.remove_c_type_id
+                lambda r: r.picking_type_id == self.recycle_c_type_id
             ).active = False
 
     def write(self, vals):
@@ -106,10 +125,10 @@ class StockWarehouse(models.Model):
                 warehouse.add_c_type_id.write(
                     {"default_location_dest_id": repair_location_id}
                 )
-            if not warehouse.remove_c_type_id:
+            if not warehouse.recycle_c_type_id:
                 par_type = self.env["stock.picking.type"].create(
                     {
-                        "name": "Remove component from Repair",
+                        "name": "Recycle component from Repair",
                         "code": "internal",
                         "sequence_code": "RCR",
                         "warehouse_id": warehouse.id,
@@ -118,9 +137,9 @@ class StockWarehouse(models.Model):
                         "company_id": warehouse.company_id.id,
                     }
                 )
-                warehouse.remove_c_type_id = par_type.id
+                warehouse.recycle_c_type_id = par_type.id
             else:
-                warehouse.remove_c_type_id.write(
+                warehouse.recycle_c_type_id.write(
                     {"default_location_src_id": repair_location_id}
                 )
 
@@ -158,7 +177,7 @@ class StockWarehouse(models.Model):
                 .with_context(active_test=False)
                 .search(
                     [
-                        ("picking_type_id", "=", warehouse.remove_c_type_id.id),
+                        ("picking_type_id", "=", warehouse.recycle_c_type_id.id),
                         ("route_id", "=", warehouse.repair_route_id.id),
                     ],
                     limit=1,
@@ -167,8 +186,8 @@ class StockWarehouse(models.Model):
             if not existing_rule:
                 self.env["stock.rule"].create(
                     {
-                        "name": "Remove component from Repair",
-                        "picking_type_id": warehouse.remove_c_type_id.id,
+                        "name": "Recycle component from Repair",
+                        "picking_type_id": warehouse.recycle_c_type_id.id,
                         "route_id": warehouse.repair_route_id.id,
                         "location_src_id": warehouse.repair_location_id.id
                         or warehouse.view_location_id.id,

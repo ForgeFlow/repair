@@ -38,7 +38,7 @@ The main features are:
 
 -  Customize repair steps: Choose between a 1-step, 2-step, or 3-step
    repair process.
--  Add and remove components during the repair process using separate
+-  Add and recycle components during the repair process using separate
    picking types.
 -  Associate repair orders with pickings for improved traceability.
 -  Automatic creation of pickings and procurement routes based on the
@@ -60,7 +60,7 @@ Configuration
    component, repair", or "Pick component, repair, store removed
    component" to define the repair process.
 3. Define the "Repair Location", "Add Component to Repair" picking type,
-   "Remove component from Repair" picking type, and "Repair Route" as
+   "Recycle component from Repair" picking type, and "Repair Route" as
    needed.
 
 Usage

@@ -67,6 +67,17 @@ class TestStockRepairOrder(common.TransactionCase):
             }
         )
 
+    def _crate_repair_order(self):
+        return self.repair_model.create(
+            {
+                "product_id": self.product1.id,
+                "product_uom": self.product1.uom_id.id,
+                "location_id": self.repair_location.id,
+                "company_id": self.company.id,
+                "picking_type_id": self.warehouse.repair_type_id.id,
+            }
+        )
+
     def test_1step_repair_order_flow(self):
         self.warehouse.write(
             {
@@ -74,14 +85,7 @@ class TestStockRepairOrder(common.TransactionCase):
                 "repair_location_id": self.repair_location.id,
             }
         )
-        repair_order = self.repair_model.create(
-            {
-                "product_id": self.product1.id,
-                "product_uom": self.product1.uom_id.id,
-                "location_id": self.repair_location.id,
-                "company_id": self.company.id,
-            }
-        )
+        repair_order = self._crate_repair_order()
         self.repair_line_model.create(
             {
                 "name": "Repair Line 1",
@@ -108,14 +112,7 @@ class TestStockRepairOrder(common.TransactionCase):
         self.product2.write(
             {"route_ids": [(6, 0, [self.warehouse.repair_route_id.id])]}
         )
-        repair_order = self.repair_model.create(
-            {
-                "product_id": self.product1.id,
-                "product_uom": self.product1.uom_id.id,
-                "location_id": self.repair_location.id,
-                "company_id": self.company.id,
-            }
-        )
+        repair_order = self._crate_repair_order()
         self.repair_line_model.create(
             {
                 "name": "Repair Line 2",
@@ -132,8 +129,9 @@ class TestStockRepairOrder(common.TransactionCase):
         repair_order._action_repair_confirm()
         repair_order._compute_picking_ids()
         self.assertEqual(repair_order.state, "confirmed")
-        self.assertTrue(repair_order.picking_ids)
-        self.assertEqual(len(repair_order.picking_ids), 1)
+        pick = repair_order.picking_ids
+        self.assertEqual(len(pick), 1)
+        self.assertEqual(pick.picking_type_id, self.warehouse.add_c_type_id)
 
     def test_3steps_repair_order_flow(self):
         self.warehouse.write(
@@ -145,14 +143,7 @@ class TestStockRepairOrder(common.TransactionCase):
         self.product2.write(
             {"route_ids": [(6, 0, [self.warehouse.repair_route_id.id])]}
         )
-        repair_order = self.repair_model.create(
-            {
-                "product_id": self.product1.id,
-                "product_uom": self.product1.uom_id.id,
-                "location_id": self.repair_location.id,
-                "company_id": self.company.id,
-            }
-        )
+        repair_order = self._crate_repair_order()
         self.repair_line_model.create(
             {
                 "name": "Repair Line 3",
@@ -171,7 +162,7 @@ class TestStockRepairOrder(common.TransactionCase):
                 "name": "Repair Line 4",
                 "repair_id": repair_order.id,
                 "product_id": self.product2.id,
-                "repair_line_type": "remove",
+                "repair_line_type": "recycle",
                 "product_uom_qty": 1,
                 "product_uom": self.product2.uom_id.id,
                 "price_unit": 1,
@@ -182,8 +173,22 @@ class TestStockRepairOrder(common.TransactionCase):
         repair_order._action_repair_confirm()
         repair_order._compute_picking_ids()
         self.assertEqual(repair_order.state, "confirmed")
-        self.assertTrue(repair_order.picking_ids)
-        self.assertEqual(len(repair_order.picking_ids), 2)
+        pickings = repair_order.picking_ids
+        self.assertEqual(len(pickings), 2)
+        pick = pickings.filtered(
+            lambda p: p.picking_type_id == self.warehouse.add_c_type_id
+        )
+        self.assertTrue(pick)
+        self.assertEqual(len(pick.move_ids.move_dest_ids), 1)
+        self.assertEqual(pick.state, "assigned")
+        self.assertEqual(pick.move_ids.move_dest_ids.repair_id, repair_order)
+        recycle = pickings.filtered(
+            lambda p: p.picking_type_id == self.warehouse.recycle_c_type_id
+        )
+        self.assertTrue(recycle)
+        self.assertEqual(len(recycle.move_ids.move_orig_ids), 1)
+        self.assertEqual(recycle.state, "waiting")
+        self.assertEqual(recycle.move_ids.move_orig_ids.repair_id, repair_order)
         repair_order.action_repair_cancel()
         self.assertEqual(repair_order.state, "cancel")
         for picking in repair_order.picking_ids:
@@ -199,14 +204,7 @@ class TestStockRepairOrder(common.TransactionCase):
         self.product2.write(
             {"route_ids": [(6, 0, [self.warehouse.repair_route_id.id])]}
         )
-        repair_order = self.repair_model.create(
-            {
-                "product_id": self.product1.id,
-                "product_uom": self.product1.uom_id.id,
-                "location_id": self.repair_location.id,
-                "company_id": self.company.id,
-            }
-        )
+        repair_order = self._crate_repair_order()
         self.repair_line_model.create(
             {
                 "name": "Repair Line 3",
@@ -249,10 +247,10 @@ class TestStockRepairOrder(common.TransactionCase):
         )
         self.repair_line_model.create(
             {
-                "name": "Repair Line Remove",
+                "name": "Repair Line Recycle",
                 "repair_id": repair_order.id,
                 "product_id": self.product2.id,
-                "repair_line_type": "remove",
+                "repair_line_type": "recycle",
                 "product_uom_qty": 1,
                 "product_uom": self.product2.uom_id.id,
                 "price_unit": 1,

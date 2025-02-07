@@ -8,21 +8,6 @@ from odoo.exceptions import UserError
 class RepairOrder(models.Model):
     _inherit = "repair.order"
 
-    @api.model
-    def _get_default_location_id(self):
-        warehouse = self.env["stock.warehouse"].search(
-            [("company_id", "=", self.env.company.id)], limit=1
-        )
-        return (
-            warehouse.repair_location_id.id
-            if warehouse and warehouse.repair_location_id
-            else False
-        )
-
-    # Changing default value on existing field
-    location_id = fields.Many2one(
-        default=_get_default_location_id,
-    )
     procurement_group_id = fields.Many2one(
         "procurement.group", "Procurement Group", copy=False
     )
@@ -36,7 +21,15 @@ class RepairOrder(models.Model):
 
     def _action_launch_stock_rule(self, repair_lines):
         for line in repair_lines:
-            self.with_context(should_be_assigned=True)._run_procurement_repair(line)
+            warehouse = line.repair_id.location_id.warehouse_id
+            if (
+                warehouse.repair_steps in ["2_steps", "3_steps"]
+                and line.repair_line_type == "add"
+            ) or (
+                warehouse.repair_steps == "3_steps"
+                and line.repair_line_type == "recycle"
+            ):
+                self.with_context(should_be_assigned=True)._run_procurement_repair(line)
         return True
 
     def _run_procurement_repair(self, line):
@@ -69,11 +62,11 @@ class RepairOrder(models.Model):
             "company_id": self.company_id,
             "warehouse_id": warehouse,
             "repair_line_id": line.id,
-            "repair_id": line.repair_id.id,
+            "related_repair_id": line.repair_id.id,
         }
         if line.restrict_lot_id:
             procurement_data["restrict_lot_id"] = line.restrict_lot_id.id
-        if line.repair_line_type == "remove":
+        if line.repair_line_type == "recycle":
             procurement_data[
                 "source_repair_location_id"
             ] = line.repair_id.location_id.id
@@ -86,7 +79,7 @@ class RepairOrder(models.Model):
         location = (
             self.location_id
             if line.repair_line_type == "add"
-            else warehouse.remove_c_type_id.default_location_dest_id
+            else warehouse.recycle_c_type_id.default_location_dest_id
         )
         procurement = self.env["procurement.group"].Procurement(
             line.product_id,
@@ -101,13 +94,23 @@ class RepairOrder(models.Model):
         return procurement
 
     def _update_stock_moves_and_picking_state(self):
+        self._compute_picking_ids()
         for repair in self:
+            if repair.move_ids:
+                add_source_location = repair.move_ids._get_repair_locations("add")[0]
+                recycle_dest_location = repair.move_ids._get_repair_locations(
+                    "recycle"
+                )[1]
+            else:
+                add_source_location = repair.location_id
+                recycle_dest_location = repair.location_id
             for picking in repair.picking_ids:
-                if picking.location_dest_id.id == self.location_id.id:
+                if picking.location_dest_id == add_source_location:
                     for move_line in picking.move_ids_without_package:
                         stock_moves = repair.move_ids.filtered(
-                            lambda m: m.repair_line_type == "add"
-                            and m.location_id.id == self.location_id.id
+                            lambda m, asl=add_source_location: m.repair_line_type
+                            == "add"
+                            and m.location_id.id == asl.id
                         )
                         if stock_moves:
                             stock_moves[0].write(
@@ -116,11 +119,12 @@ class RepairOrder(models.Model):
                                     "state": "waiting",
                                 }
                             )
-                if picking.location_id.id == self.location_id.id:
+                if picking.location_id.id == recycle_dest_location.id:
                     for move_line in picking.move_ids_without_package:
                         stock_moves = repair.move_ids.filtered(
-                            lambda m: m.repair_line_type == "remove"
-                            and m.location_dest_id.id == self.location_id.id
+                            lambda m, rdl=recycle_dest_location: m.repair_line_type
+                            == "recycle"
+                            and m.location_dest_id.id == rdl.id
                         )
                         if stock_moves:
                             move_line.write(
@@ -138,19 +142,7 @@ class RepairOrder(models.Model):
     def _action_repair_confirm(self):
         res = super()._action_repair_confirm()
         for repair in self:
-            warehouse = repair.location_id.warehouse_id
-            if warehouse.repair_steps in ["2_steps", "3_steps"]:
-                repair._action_launch_stock_rule(
-                    repair.move_ids.filtered(
-                        lambda move: move.repair_line_type == "add"
-                    ),
-                )
-            if warehouse.repair_steps == "3_steps":
-                repair._action_launch_stock_rule(
-                    repair.move_ids.filtered(
-                        lambda move: move.repair_line_type == "remove"
-                    ),
-                )
+            repair._action_launch_stock_rule(repair.move_ids)
             repair._update_stock_moves_and_picking_state()
         return res
 
@@ -161,7 +153,7 @@ class RepairOrder(models.Model):
             if line.repair_line_type == "add":
                 line.location_id = self.location_id
             elif (
-                line.repair_line_type == "remove"
+                line.repair_line_type == "recycle"
                 and warehouse.repair_steps == "3_steps"
             ):
                 line.location_dest_id = self.location_id

@@ -35,7 +35,7 @@ class TestStockRepairWarehouse(common.TransactionCase):
 
         self.assertEqual(self.warehouse_1.repair_steps, "2_steps")
         self.assertTrue(self.warehouse_1.add_c_type_id.active)
-        self.assertFalse(self.warehouse_1.remove_c_type_id.active)
+        self.assertFalse(self.warehouse_1.recycle_c_type_id.active)
         self.assertTrue(self.warehouse_1.repair_route_id.active)
 
     def test_03_update_repair_steps_to_3_steps(self):
@@ -43,7 +43,7 @@ class TestStockRepairWarehouse(common.TransactionCase):
 
         self.assertEqual(self.warehouse_1.repair_steps, "3_steps")
         self.assertTrue(self.warehouse_1.add_c_type_id.active)
-        self.assertTrue(self.warehouse_1.remove_c_type_id.active)
+        self.assertTrue(self.warehouse_1.recycle_c_type_id.active)
         self.assertTrue(self.warehouse_1.repair_route_id.active)
 
     def test_04_reverse_and_update_repair_steps(self):
@@ -51,7 +51,7 @@ class TestStockRepairWarehouse(common.TransactionCase):
         self.warehouse_1.repair_steps = "2_steps"
         self.assertEqual(self.warehouse_1.repair_steps, "2_steps")
         self.assertTrue(self.warehouse_1.add_c_type_id.active)
-        self.assertFalse(self.warehouse_1.remove_c_type_id.active)
+        self.assertFalse(self.warehouse_1.recycle_c_type_id.active)
         self.assertTrue(self.warehouse_1.repair_route_id.active)
         add_rule = self.env["stock.rule"].search(
             [
@@ -63,7 +63,7 @@ class TestStockRepairWarehouse(common.TransactionCase):
 
         remove_rule = self.env["stock.rule"].search(
             [
-                ("picking_type_id", "=", self.warehouse_1.remove_c_type_id.id),
+                ("picking_type_id", "=", self.warehouse_1.recycle_c_type_id.id),
                 ("route_id", "=", self.warehouse_1.repair_route_id.id),
             ]
         )
@@ -72,7 +72,7 @@ class TestStockRepairWarehouse(common.TransactionCase):
         self.warehouse_1.repair_steps = "3_steps"
         self.assertEqual(self.warehouse_1.repair_steps, "3_steps")
         self.assertTrue(self.warehouse_1.add_c_type_id.active)
-        self.assertTrue(self.warehouse_1.remove_c_type_id.active)
+        self.assertTrue(self.warehouse_1.recycle_c_type_id.active)
         self.assertTrue(self.warehouse_1.repair_route_id.active)
         add_rule = self.env["stock.rule"].search(
             [
@@ -83,7 +83,7 @@ class TestStockRepairWarehouse(common.TransactionCase):
         self.assertTrue(add_rule.active)
         remove_rule = self.env["stock.rule"].search(
             [
-                ("picking_type_id", "=", self.warehouse_1.remove_c_type_id.id),
+                ("picking_type_id", "=", self.warehouse_1.recycle_c_type_id.id),
                 ("route_id", "=", self.warehouse_1.repair_route_id.id),
             ]
         )
@@ -92,7 +92,7 @@ class TestStockRepairWarehouse(common.TransactionCase):
         self.warehouse_1.repair_steps = "2_steps"
         self.assertEqual(self.warehouse_1.repair_steps, "2_steps")
         self.assertTrue(self.warehouse_1.add_c_type_id.active)
-        self.assertFalse(self.warehouse_1.remove_c_type_id.active)
+        self.assertFalse(self.warehouse_1.recycle_c_type_id.active)
         self.assertTrue(self.warehouse_1.repair_route_id.active)
         add_rule = self.env["stock.rule"].search(
             [
@@ -104,7 +104,7 @@ class TestStockRepairWarehouse(common.TransactionCase):
 
         remove_rule = self.env["stock.rule"].search(
             [
-                ("picking_type_id", "=", self.warehouse_1.remove_c_type_id.id),
+                ("picking_type_id", "=", self.warehouse_1.recycle_c_type_id.id),
                 ("route_id", "=", self.warehouse_1.repair_route_id.id),
             ]
         )
@@ -112,5 +112,5 @@ class TestStockRepairWarehouse(common.TransactionCase):
 
         self.warehouse_1.repair_steps = "1_step"
         self.assertFalse(self.warehouse_1.add_c_type_id.active)
-        self.assertFalse(self.warehouse_1.remove_c_type_id.active)
+        self.assertFalse(self.warehouse_1.recycle_c_type_id.active)
         self.assertFalse(self.warehouse_1.repair_route_id.active)
