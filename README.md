@@ -26,6 +26,7 @@ addon | version | maintainers | summary
 [repair_picking_after_done](repair_picking_after_done/) | 17.0.1.1.0 |  | Transfer repaired move to another location directly from repair order
 [repair_quality_control](repair_quality_control/) | 17.0.1.0.0 | [![peluko00](https://github.com/peluko00.png?size=30px)](https://github.com/peluko00) | Create quality controls from repair order
 [repair_refurbish](repair_refurbish/) | 17.0.1.0.0 |  | Create refurbished products during repair
+[repair_restrict_lot](repair_restrict_lot/) | 17.0.1.0.0 |  | Repair Restrict Lot
 [repair_service](repair_service/) | 17.0.1.0.0 |  | Adds services to repair orders, so that they can be added as sale order lines.
 [repair_stock](repair_stock/) | 17.0.1.0.1 |  | Repair Stock
 [repair_timesheet](repair_timesheet/) | 17.0.1.0.0 | [![ppyczko](https://github.com/ppyczko.png?size=30px)](https://github.com/ppyczko) | Repair Timesheet
