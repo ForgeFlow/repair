@@ -30,7 +30,7 @@ addon | version | maintainers | summary
 [repair_service](repair_service/) | 17.0.1.0.0 |  | Adds services to repair orders, so that they can be added as sale order lines.
 [repair_stock](repair_stock/) | 17.0.1.0.1 |  | Repair Stock
 [repair_timesheet](repair_timesheet/) | 17.0.1.0.0 | [![ppyczko](https://github.com/ppyczko.png?size=30px)](https://github.com/ppyczko) | Repair Timesheet
-[repair_type](repair_type/) | 17.0.1.1.0 |  | Repair type
+[repair_type](repair_type/) | 17.0.1.1.1 |  | Repair type
 [repair_type_product_destination](repair_type_product_destination/) | 17.0.1.0.0 | [![ppyczko](https://github.com/ppyczko.png?size=30px)](https://github.com/ppyczko) | Repair Type - Product Destination
 
 [//]: # (end addons)
