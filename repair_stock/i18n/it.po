@@ -17,9 +17,24 @@ msgstr ""
 "X-Generator: Weblate 5.6.2\n"
 
 #. module: repair_stock
+#: model:ir.model.fields,field_description:repair_stock.field_stock_move__related_repair_id
+msgid "Related Repair"
+msgstr ""
+
+#. module: repair_stock
 #: model:ir.model,name:repair_stock.model_repair_order
 msgid "Repair Order"
 msgstr "Ordine di riparazione"
+
+#. module: repair_stock
+#: model:ir.model,name:repair_stock.model_stock_move
+msgid "Stock Move"
+msgstr ""
+
+#. module: repair_stock
+#: model:ir.model,name:repair_stock.model_stock_rule
+msgid "Stock Rule"
+msgstr ""
 
 #. module: repair_stock
 #: model:ir.model.fields,field_description:repair_stock.field_repair_order__picking_count
