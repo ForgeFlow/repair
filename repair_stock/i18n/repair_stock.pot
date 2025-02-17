@@ -14,8 +14,23 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: repair_stock
+#: model:ir.model.fields,field_description:repair_stock.field_stock_move__related_repair_id
+msgid "Related Repair"
+msgstr ""
+
+#. module: repair_stock
 #: model:ir.model,name:repair_stock.model_repair_order
 msgid "Repair Order"
+msgstr ""
+
+#. module: repair_stock
+#: model:ir.model,name:repair_stock.model_stock_move
+msgid "Stock Move"
+msgstr ""
+
+#. module: repair_stock
+#: model:ir.model,name:repair_stock.model_stock_rule
+msgid "Stock Rule"
 msgstr ""
 
 #. module: repair_stock
