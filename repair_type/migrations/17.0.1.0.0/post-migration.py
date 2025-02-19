@@ -10,10 +10,10 @@ def migrate(env, version):
         env.cr,
         """
         INSERT INTO stock_picking_type
-        (create_date, default_add_location_dest_id, default_remove_location_dest_id,
+        (create_date, default_location_dest_id, default_remove_location_dest_id,
         name,default_add_location_src_id, default_remove_location_src_id)
         SELECT create_date, destination_location_add_part_id,
-        destination_location_remove_part_id, name,
+        destination_location_remove_part_id, name::jsonb,
         source_location_add_part_id, source_location_remove_part_id
         FROM repair_type;
         """,
