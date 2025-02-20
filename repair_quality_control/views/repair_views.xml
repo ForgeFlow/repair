@@ -10,21 +10,21 @@
             <xpath expr="//button[@name='action_validate']" position="before">
                 <button
                     name="action_create_qc_inspection"
-                    invisible="state != 'done'"
+                    attrs="{'invisible': [('state', '!=', 'done')]}"
                     string="Create Inspection"
                     type="object"
                     class="oe_highlight"
                     data-hotkey="q"
                 />
             </xpath>
-            <xpath expr="//button[@name='action_view_sale_order']" position="after">
+            <xpath expr="//button[@name='action_created_invoice']" position="after">
                 <field name="inspection_ids" readonly="1" invisible="1" />
                 <button
                     class="oe_stat_button"
                     name="action_view_repair_inspections"
                     type="object"
                     icon="fa-list-ul"
-                    invisible="not inspection_ids"
+                    attrs="{'invisible': [('inspection_ids', '=', [])]}"
                 >
                     <div class="o_field_widget o_stat_info">
                         <span class="o_stat_text">Inspections</span>

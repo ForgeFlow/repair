@@ -14,7 +14,7 @@
                     name="action_view_qc_repair_order"
                     type="object"
                     icon="fa-wrench"
-                    invisible="not repair_id"
+                    attrs="{'invisible': [('repair_id', '=', False)]}"
                 >
                     <div class="o_field_widget o_stat_info">
                         <span class="o_stat_text">Repair order</span>
