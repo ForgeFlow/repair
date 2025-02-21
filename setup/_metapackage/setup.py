@@ -12,6 +12,7 @@ setuptools.setup(
         'odoo-addon-repair_discount>=16.0dev,<16.1dev',
         'odoo-addon-repair_picking_after_done>=16.0dev,<16.1dev',
         'odoo-addon-repair_purchase_return>=16.0dev,<16.1dev',
+        'odoo-addon-repair_quality_control>=16.0dev,<16.1dev',
         'odoo-addon-repair_reason>=16.0dev,<16.1dev',
         'odoo-addon-repair_refurbish>=16.0dev,<16.1dev',
         'odoo-addon-repair_reinvoice>=16.0dev,<16.1dev',
