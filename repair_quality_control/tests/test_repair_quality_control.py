@@ -18,8 +18,7 @@ class RepairQualityControlTest(TransactionCase):
     def test_create_inspection_from_repair_order(self):
         inspect_form = Form(
             self.env["qc.inspection"].with_context(
-                default_repair_id=self.repair_order.id,
-                default_object_id=f"product.product,{self.repair_order.product_id.id}",
+                default_object_id=f"repair.order,{self.repair_order.id}"
             )
         )
         qc_inspection = inspect_form.save()
@@ -27,11 +26,11 @@ class RepairQualityControlTest(TransactionCase):
         self.assertEqual(
             self.repair_order.inspection_ids.product_id, qc_inspection.product_id
         )
+
         self.repair_order.lot_id = self.env.ref("stock.lot_product_27").id
         inspect_form = Form(
             self.env["qc.inspection"].with_context(
-                default_repair_id=self.repair_order.id,
-                default_object_id=f"stock.lot,{self.repair_order.lot_id.id}",
+                default_object_id=f"repair.order,{self.repair_order.id}"
             )
         )
         qc_inspection = inspect_form.save()

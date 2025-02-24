@@ -2,15 +2,17 @@
 <!-- # Copyright 2024 Antoni Marroig(APSL-Nagarro)<amarroig@apsl.net>
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
+
     <record id="view_repair_order_form_inherit" model="ir.ui.view">
         <field name="name">repair.order.form.inherit</field>
         <field name="model">repair.order</field>
         <field name="inherit_id" ref="repair.view_repair_order_form" />
         <field name="arch" type="xml">
             <xpath expr="//button[@name='action_validate']" position="before">
+                <field name="show_button_create_qc_inspection" invisible="1" />
                 <button
                     name="action_create_qc_inspection"
-                    attrs="{'invisible': [('state', '!=', 'done')]}"
+                    attrs="{'invisible': [('show_button_create_qc_inspection', '=', False)]}"
                     string="Create Inspection"
                     type="object"
                     class="oe_highlight"
@@ -33,4 +35,23 @@
             </xpath>
         </field>
     </record>
+
+    <record id="repair_config_settings_action" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_id" ref="res_config_settings_view_form" />
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'repair', 'bin_size': False}</field>
+    </record>
+    <menuitem
+        id="menu_repair_general_settings"
+        name="Settings"
+        parent="repair.repair_menu_config"
+        sequence="0"
+        action="repair_config_settings_action"
+        groups="base.group_system"
+    />
+
 </odoo>

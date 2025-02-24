@@ -16,6 +16,8 @@
         "quality_control_stock_oca",
     ],
     "data": [
+        "data/repair_quality_control_data.xml",
+        "views/res_config_settings_views.xml",
         "views/repair_views.xml",
         "views/qc_inspection_views.xml",
     ],

@@ -21,6 +21,9 @@
                     </div>
                 </button>
             </xpath>
+            <xpath expr="//field[@name='lot_id']" position="before">
+                <field name="repair_id" readonly="1" />
+            </xpath>
         </field>
     </record>
 </odoo>
