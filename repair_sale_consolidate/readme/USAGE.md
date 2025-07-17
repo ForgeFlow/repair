@@ -1,0 +1,2 @@
+- From a repair order, click **"Link to Quotation"** to associate it with an existing draft sale order.
+- From the repair order list view, select multiple repair orders and use the **"Create Quotation"** action to generate a new sale order.

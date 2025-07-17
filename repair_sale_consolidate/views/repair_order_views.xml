@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Wizard Form View for Linking to Existing Quotation -->
+    <record id="view_repair_link_quotation_wizard_form" model="ir.ui.view">
+        <field name="name">repair.link.to.sale.order.wizard.form</field>
+        <field name="model">repair.link.to.sale.order.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Link Repair to Quotation">
+                <group>
+                    <field name="repair_order_id" readonly="1" />
+                    <field
+                        name="sale_order_id"
+                        options="{'no_create': True, 'no_open': True}"
+                    />
+                </group>
+                <footer>
+                    <button
+                        name="action_link_to_quotation"
+                        type="object"
+                        string="Link to Quotation"
+                        class="btn-primary"
+                    />
+                    <button string="Cancel" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Wizard Form View for Creating Quotation from Repairs -->
+    <record id="view_repair_create_quotation_wizard_form" model="ir.ui.view">
+        <field name="name">repair.create.sale.order.wizard.form</field>
+        <field name="model">repair.create.sale.order.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Create Quotation from Repairs">
+                <group>
+                    <field name="repair_order_ids" widget="many2many_tags" />
+                </group>
+                <footer>
+                    <button
+                        name="action_create_sale_order"
+                        type="object"
+                        string="Create Quotation"
+                        class="btn-primary"
+                    />
+                    <button string="Cancel" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action for Linking to Existing Quotation -->
+    <record id="action_repair_link_quotation_wizard" model="ir.actions.act_window">
+        <field name="name">Link to Quotation</field>
+        <field name="res_model">repair.link.to.sale.order.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_repair_link_quotation_wizard_form" />
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="repair.model_repair_order" />
+    </record>
+
+    <!-- Action for Creating Quotation from Repairs -->
+    <record id="action_repair_create_quotation_wizard" model="ir.actions.act_window">
+        <field name="name">Create Quotation from Repairs</field>
+        <field name="res_model">repair.create.sale.order.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_repair_create_quotation_wizard_form" />
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="repair.model_repair_order" />
+    </record>
+</odoo>
