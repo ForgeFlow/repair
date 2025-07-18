@@ -12,9 +12,10 @@
     "data": [
         "security/ir.model.access.csv",
         "views/repair_order_views.xml",
+        "wizards/repair_link_to_sale_order_wizard.xml",
     ],
     "installable": True,
     "development_status": "Alpha",
     "license": "AGPL-3",
-    "application": False,
+    "maintainers": ["AaronHForgeFlow"],
 }

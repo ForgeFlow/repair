@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_repair_link_to_sale_order_wizard_form" model="ir.ui.view">
+        <field name="name">repair.link.to.sale.order.wizard.form</field>
+        <field name="model">repair.link.to.sale.order.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Link to Existing Quotation" class="o_form">
+                <group>
+                    <field
+                        name="repair_order_ids"
+                        required="1"
+                        widget="many2many_tags"
+                    />
+                    <field
+                        name="sale_order_id"
+                        required="1"
+                        domain="[('state', '=', 'draft')]"
+                    />
+                </group>
+                <footer>
+                    <button
+                        name="action_link_repairs"
+                        type="object"
+                        string="Link"
+                        class="btn-primary"
+                    />
+                    <button string="Cancel" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_repair_link_to_sale_order_wizard" model="ir.actions.act_window">
+        <field name="name">Link to Quotation</field>
+        <field name="res_model">repair.link.to.sale.order.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_repair_link_to_sale_order_wizard_form" />
+        <field name="binding_model_id" ref="repair.model_repair_order" />
+        <field name="target">new</field>
+    </record>
+</odoo>

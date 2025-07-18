@@ -9,9 +9,7 @@ class RepairCreateSaleOrderWizard(models.TransientModel):
     _name = "repair.create.sale.order.wizard"
     _description = "Create Quotation from Repair Orders"
 
-    repair_order_ids = fields.Many2many(
-        "repair.order", string="Repair Orders", required=True
-    )
+    repair_order_ids = fields.Many2many("repair.order", required=True)
 
     def action_create_sale_order(self):
         self.ensure_one()
