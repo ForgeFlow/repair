@@ -81,11 +81,11 @@ Authors
 Contributors
 ------------
 
-- `ForgeFlow <https://forgeflow.com>`__:
+-  `ForgeFlow <https://forgeflow.com>`__:
 
-     - Andreu Orensanz <andreu.orensanz@forgeflow.com>
+      -  Andreu Orensanz <andreu.orensanz@forgeflow.com>
 
-- ``Heliconia Solutions Pvt. Ltd. <https://www.heliconia.io>``\ \_
+-  ``Heliconia Solutions Pvt. Ltd. <https://www.heliconia.io>``\ \_
 
 Maintainers
 -----------
