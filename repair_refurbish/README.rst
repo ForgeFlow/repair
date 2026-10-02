@@ -61,7 +61,8 @@ desired destination location.
 The refurbished product is linked to the initial product in the
 traceability report, so the lot or serial number of the refurbished
 product can be traced back to the initial product and to the parts added
-or removed during the repair.
+or removed during the repair. The refurbished product and its lot or
+serial number are also shown in the printed repair order report.
 
 Bug Tracker
 ===========
