@@ -8,3 +8,8 @@
 The initial product will be moved to the 'Refurbish' location, and the
 refurbished product will be moved from a 'Refurbish' location to the
 desired destination location.
+
+The refurbished product is linked to the initial product in the
+traceability report, so the lot or serial number of the refurbished
+product can be traced back to the initial product and to the parts added
+or removed during the repair.

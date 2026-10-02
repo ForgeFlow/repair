@@ -88,6 +88,14 @@ class TestMrpMtoWithStock(TransactionCase):
                 )
             else:
                 self.assertTrue(False, "Unexpected move.")
+        self.assertEqual(
+            repair.refurbish_move_id.move_line_ids.consume_line_ids,
+            repair.move_id.move_line_ids,
+        )
+        self.assertEqual(
+            repair.move_id.move_line_ids.produce_line_ids,
+            repair.refurbish_move_id.move_line_ids,
+        )
 
     def test_02_repair_no_refurbish(self):
         """Tests normal repairs does not fail and normal location for consumed
@@ -135,3 +143,55 @@ class TestMrpMtoWithStock(TransactionCase):
         self.assertEqual(len(repaired_move), 1)
         self.assertEqual(repaired_move.location_id, self.stock_location_stock)
         self.assertEqual(repaired_move.location_dest_id, self.stock_location_stock)
+
+    def test_03_repair_refurbish_traceability(self):
+        """Tests that the refurbished product is traceable back to the
+        original product and the parts added during the repair."""
+        repair = self.repair_obj.create(
+            {
+                "product_id": self.product.id,
+                "product_qty": 1.0,
+                "product_uom": self.product.uom_id.id,
+                "picking_type_id": self.warehouse.repair_type_id.id,
+                "to_refurbish": True,
+                "refurbish_product_id": self.refurbish_product.id,
+                "refurbish_location_dest_id": self.stock_location_stock.id,
+                "move_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "product_id": self.material2.id,
+                            "product_uom_qty": 1.0,
+                            "state": "draft",
+                            "repair_line_type": "add",
+                            "location_id": self.stock_location_stock.id,
+                            "location_dest_id": self.customer_location.id,
+                        },
+                    )
+                ],
+            }
+        )
+        repair.action_validate()
+        repair.action_repair_start()
+        repair.move_ids.move_line_ids.picked = True
+        repair.action_repair_end()
+        part_lines = repair.move_ids.move_line_ids
+        original_lines = repair.move_id.move_line_ids
+        refurbished_lines = repair.refurbish_move_id.move_line_ids
+        report = self.env["stock.traceability.report"]
+        linked_lines, _is_used = report._get_linked_move_lines(refurbished_lines)
+        self.assertEqual(linked_lines, original_lines)
+        linked_lines, _is_used = report._get_linked_move_lines(original_lines)
+        self.assertEqual(linked_lines, part_lines)
+        _linked_lines, is_used = report._get_linked_move_lines(original_lines)
+        self.assertEqual(is_used, refurbished_lines)
+        lines = report._lines(
+            line_id=refurbished_lines.id,
+            model_id=refurbished_lines.id,
+            model="stock.move.line",
+        )
+        self.assertEqual(len(lines), 1)
+        self.assertEqual(lines[0]["model_id"], original_lines.id)
+        self.assertEqual(lines[0]["reference_id"], repair.name)
+        self.assertTrue(lines[0]["unfoldable"])

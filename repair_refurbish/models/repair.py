@@ -65,6 +65,7 @@ class RepairOrder(models.Model):
                         "result_package_id": False,
                         "location_id": refurbish_loc.id,
                         "location_dest_id": self.refurbish_location_dest_id.id,
+                        "consume_line_ids": [(6, 0, self.move_id.move_line_ids.ids)],
                     },
                 )
             ],
